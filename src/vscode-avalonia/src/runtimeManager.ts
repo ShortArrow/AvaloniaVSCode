@@ -12,16 +12,13 @@ interface IDotnetAcquireResult {
 }
 
 /**
- * Gets the path to the .NET runtime.
+ * Resolves the .NET runtime path via the ms-dotnettools `dotnet.findPath`
+ * command, falling back to `dotnet` on the PATH when that command has no
+ * acquisition record for this extension id (which otherwise throws and would
+ * fail the whole activation).
  * @returns A promise that resolves to the path to the .NET runtime.
- * @throws An error if the .NET runtime path could not be resolved.
  */
 export async function getDotnetRuntimePath(): Promise<string> {
-	// ms-dotnettools の dotnet.findPath は requestingExtensionId に紐づく取得記録を
-	// 参照する。フォークのように取得記録の無い拡張 ID だと内部で undefined を読み
-	// ("Cannot read properties of undefined (reading 'extensionId')") 例外になる。
-	// これを未捕捉で伝播させると activate ごと失敗し全コマンドが登録されない。
-	// 失敗時は PATH の 'dotnet' にフォールバックして機能を止めない。
 	try {
 		const path = await vscode.commands.executeCommand<IDotnetAcquireResult>("dotnet.findPath", {
 			acquireContext: {
