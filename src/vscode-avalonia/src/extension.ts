@@ -64,9 +64,12 @@ export async function activate(context: vscode.ExtensionContext) {
 	);
 	context.subscriptions.push(insertCmd);
 
-	languageClient = await createLanguageService();
-
+	// 言語サーバ (intellisense) のセットアップ失敗を拡張全体の失敗にしない。
+	// createLanguageService は .NET ランタイム取得や言語サーバのパス解決を伴い、
+	// これらが reject すると activate ごと失敗して登録済みコマンド (プレビュー等) が
+	// 破棄される。プレビューは言語サーバ非依存で動くため、失敗はログに留める。
 	try {
+		languageClient = await createLanguageService();
 		logger.appendLine("Starting Avalonia Language Server...");
 		await languageClient.start();
 	} catch (error) {
