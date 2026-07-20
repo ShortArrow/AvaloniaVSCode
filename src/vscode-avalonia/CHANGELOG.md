@@ -2,6 +2,24 @@
 
 All notable changes to the "vscode-avalonia" extension will be documented in this file.
 
+> This is an independent, MIT-licensed continuation of
+> [AvaloniaUI/AvaloniaVSCode](https://github.com/AvaloniaUI/AvaloniaVSCode),
+> starting from that project's archived `ARCHIVE` branch (tag `upstream-archive`,
+> commit `d0e5d9c`, upstream version 0.0.32). Upstream is frozen — no changes
+> will be merged from it. Entries under _Unreleased_ and any fork releases
+> (starting at 0.1.0) are changes made after the fork point; the upstream 0.0.x
+> history is preserved unchanged below.
+
+## [Unreleased]
+
+### Added
+
+- Recognize `.slnx` (XML solution) files when locating a workspace's solution,
+  so the AXAML previewer works in repositories that use the newer solution
+  format. Previously only classic `.sln` files were discovered; a workspace with
+  only a `.slnx` yielded zero projects and surfaced as
+  "No executable project found."
+
 ## [0.0.27] - 18 January 2024
 
 Fixes:
