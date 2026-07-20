@@ -71,11 +71,15 @@ function updateSolutionModel(context: vscode.ExtensionContext, jsonContect: stri
 }
 
 async function getSolutionFile(): Promise<string | undefined> {
-	const filePattern = "**/*.sln";
-	const files = await vscode.workspace.findFiles(filePattern);
-
-	if (files.length > 0) {
-		return files[0].fsPath;
+	// Prefer a classic .sln, then fall back to the newer .slnx (XML solution).
+	// The bundled SolutionParser accepts either when given the file path; only
+	// this discovery step needed to learn about .slnx. Passing the workspace
+	// directory (the previous fallback) makes the parser return zero projects.
+	for (const filePattern of ["**/*.sln", "**/*.slnx"]) {
+		const files = await vscode.workspace.findFiles(filePattern);
+		if (files.length > 0) {
+			return files[0].fsPath;
+		}
 	}
 
 	return vscode.workspace.workspaceFolders?.[0].uri.fsPath;
