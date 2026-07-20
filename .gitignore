@@ -398,3 +398,6 @@ output/
 
 # JetBrains Rider
 *.sln.iml
+
+# VS Code extension packages
+*.vsix
