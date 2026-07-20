@@ -10,7 +10,7 @@
   "sponsor": {
     "url": "https://github.com/sponsors/AvaloniaUI"
   },
-  "icon": "./media/icon.png",
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.79.0"
   },
@@ -132,7 +132,7 @@
   },
   "scripts": {
     "install:all": "yarn install",
-    "vscode:prepublish": "yarn run compile",
+    "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
