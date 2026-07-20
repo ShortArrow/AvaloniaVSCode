@@ -1,9 +1,9 @@
 {
-  "name": "vscode-avalonia",
-  "displayName": "Avalonia for VSCode",
+  "name": "vscode-avalonia-slnx",
+  "displayName": "Avalonia for VSCode (slnx fork)",
   "description": "Avalonia tools for Visual Studio Code",
-  "publisher": "AvaloniaTeam",
-  "version": "0.0.32",
+  "publisher": "shortarrow",
+  "version": "0.1.0",
   "license": "MIT",
   "preview": true,
   "qna": "false",
@@ -31,7 +31,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AvaloniaUI/AvaloniaVSCode"
+    "url": "https://github.com/ShortArrow/AvaloniaVSCode"
   },
   "activationEvents": [
     "workspaceContains:**/*.axaml",
