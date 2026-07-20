@@ -10,8 +10,6 @@ import { spawn } from "child_process";
 import { AppConstants, logger } from "../util/Utilities";
 import { getDotnetRuntimePath } from "../runtimeManager";
 
-const extensionId = AppConstants.extensionId;
-
 /**
  * Builds the solution model by parsing the solution file and updating the workspace state.
  * If the output file already exists and `force` is false, the function does nothing.
@@ -70,11 +68,13 @@ function updateSolutionModel(context: vscode.ExtensionContext, jsonContect: stri
 	context.workspaceState.update(AppConstants.solutionData, data);
 }
 
+/**
+ * Locates the workspace solution file, preferring a classic `.sln` and falling
+ * back to the newer `.slnx` (XML solution). The parser accepts either format by
+ * path; when neither exists it returns the first workspace folder.
+ * @returns The solution file path, or the workspace folder path when none is found.
+ */
 async function getSolutionFile(): Promise<string | undefined> {
-	// Prefer a classic .sln, then fall back to the newer .slnx (XML solution).
-	// The bundled SolutionParser accepts either when given the file path; only
-	// this discovery step needed to learn about .slnx. Passing the workspace
-	// directory (the previous fallback) makes the parser return zero projects.
 	for (const filePattern of ["**/*.sln", "**/*.slnx"]) {
 		const files = await vscode.workspace.findFiles(filePattern);
 		if (files.length > 0) {
@@ -92,7 +92,7 @@ async function isOutputExists() {
 }
 
 async function parseSolution(context: vscode.ExtensionContext): Promise<string> {
-	const avaloniaExtn = vscode.extensions.getExtension(extensionId);
+	const avaloniaExtn = vscode.extensions.getExtension(AppConstants.extensionId);
 	if (!avaloniaExtn) {
 		throw new Error("Could not find sample extension.");
 	}
