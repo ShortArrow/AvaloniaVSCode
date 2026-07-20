@@ -17,24 +17,32 @@ interface IDotnetAcquireResult {
  * @throws An error if the .NET runtime path could not be resolved.
  */
 export async function getDotnetRuntimePath(): Promise<string> {
-	const path = await vscode.commands.executeCommand<IDotnetAcquireResult>("dotnet.findPath", {
-		acquireContext: {
-			version: dotnetRuntimeVersion,
-			requestingExtensionId: AppConstants.extensionId,
-			mode: 'runtime',
-			installType: 'global',
-			architecture: process.arch
-		},
-		versionSpecRequirement: 'greater_than_or_equal'
-	});
+	// ms-dotnettools の dotnet.findPath は requestingExtensionId に紐づく取得記録を
+	// 参照する。フォークのように取得記録の無い拡張 ID だと内部で undefined を読み
+	// ("Cannot read properties of undefined (reading 'extensionId')") 例外になる。
+	// これを未捕捉で伝播させると activate ごと失敗し全コマンドが登録されない。
+	// 失敗時は PATH の 'dotnet' にフォールバックして機能を止めない。
+	try {
+		const path = await vscode.commands.executeCommand<IDotnetAcquireResult>("dotnet.findPath", {
+			acquireContext: {
+				version: dotnetRuntimeVersion,
+				requestingExtensionId: AppConstants.extensionId,
+				mode: 'runtime',
+				installType: 'global',
+				architecture: process.arch
+			},
+			versionSpecRequirement: 'greater_than_or_equal'
+		});
 
-	if (!path) {
-		const message = `.NET ${dotnetRuntimeVersion} was not found. Please make sure it's installed globally.`;
-		logger.error(message);
-		throw new Error(message);
+		if (path?.dotnetPath) {
+			return path.dotnetPath;
+		}
+		logger.appendLine("dotnet.findPath returned no path; falling back to 'dotnet' on PATH.");
+	} catch (error) {
+		logger.appendLine(`dotnet.findPath failed (${error}); falling back to 'dotnet' on PATH.`);
 	}
 
-	return path.dotnetPath;
+	return "dotnet";
 }
 
 /**
