@@ -23,7 +23,7 @@ Welcome to Avalonia Extension for VS Code! We appreciate your interest in contri
 
 1. Fork and Clone the repository
 
-    `git clone --recursive https://github.com/AvaloniaUI/AvaloniaVSCode`
+    `git clone --recursive https://github.com/ShortArrow/AvaloniaVSCode.git`
 
 2. Update submodules
 This extension uses git submodules to pull in the Solution Parser and the Avalonia Visual Studio repo. Run the following to pull in the submodules:

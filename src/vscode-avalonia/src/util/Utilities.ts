@@ -91,7 +91,7 @@ export class AppConstants {
 
 	static readonly updatePreviewerContent = "avalonia.updatePreviewerContext";
 
-	static readonly extensionId = "shortarrow.vscode-avalonia-slnx";
+	static readonly extensionId = "shortarrow.vscode-avalonia-oss";
 
 	static readonly newProjectCommandId = "avalonia.newProject";
 }

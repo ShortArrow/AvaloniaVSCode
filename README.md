@@ -1,5 +1,9 @@
 # Avalonia for Visual Studio Code
 
+> **This is an unofficial community fork of [AvaloniaUI/AvaloniaVSCode](https://github.com/AvaloniaUI/AvaloniaVSCode), focused on supporting the `.slnx` solution format. It is not maintained or endorsed by the Avalonia project.**
+>
+> Report issues and contribute at [ShortArrow/AvaloniaVSCode](https://github.com/ShortArrow/AvaloniaVSCode).
+
 [Avalonia](https://github.com/AvaloniaUI/Avalonia/) is a cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of Operating Systems such as Windows via .NET Framework and .NET Core, Linux via Xorg and macOS.
 
 The Avalonia for Visual Studio Code Extension contains support for Avalonia XAML autocomplete and previewer.

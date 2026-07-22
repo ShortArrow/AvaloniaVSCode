@@ -1,6 +1,6 @@
 {
-  "name": "vscode-avalonia-slnx",
-  "displayName": "Avalonia for VSCode (slnx fork)",
+  "name": "vscode-avalonia-oss",
+  "displayName": "Avalonia for VSCode (community fork)",
   "description": "Avalonia tools for Visual Studio Code",
   "publisher": "shortarrow",
   "version": "0.1.2",
@@ -27,7 +27,7 @@
     "theme": "dark"
   },
   "bugs": {
-    "url": "https://github.com/AvaloniaUI/AvaloniaVSCode/issues"
+    "url": "https://github.com/ShortArrow/AvaloniaVSCode/issues"
   },
   "repository": {
     "type": "git",
