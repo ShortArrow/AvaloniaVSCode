@@ -10,15 +10,16 @@ All notable changes to the "vscode-avalonia" extension will be documented in thi
 > (starting at 0.1.0) are changes made after the fork point; the upstream 0.0.x
 > history is preserved unchanged below.
 
-## [Unreleased]
+## [0.1.2] - 2026-07-22
 
 ### Added
 
-- Recognize `.slnx` (XML solution) files when locating a workspace's solution,
-  so the AXAML previewer works in repositories that use the newer solution
-  format. Previously only classic `.sln` files were discovered; a workspace with
-  only a `.slnx` yielded zero projects and surfaced as
-  "No executable project found."
+- Recognize `.slnx` (XML solution) files when locating a workspace's solution.
+  Both the AXAML previewer and the language server's completion metadata now
+  discover `.slnx` solutions, so preview and autocomplete work in repositories
+  that use the newer solution format. Previously only classic `.sln` files were
+  discovered; a workspace with only a `.slnx` yielded zero projects and surfaced
+  as "No executable project found."
 
 ## [0.0.27] - 18 January 2024
 

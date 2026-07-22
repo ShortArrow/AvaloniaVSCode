@@ -1,4 +1,5 @@
 
+using System.Linq;
 using System.Text.Json;
 using Avalonia.Ide.CompletionEngine;
 using Avalonia.Ide.CompletionEngine.AssemblyMetadata;
@@ -49,14 +50,26 @@ public class Workspace
         return _metadataReader.GetForTargetAssembly(exeProj?.TargetPath ?? "");
     }
 
+    /// <summary>
+    /// Finds the workspace's solution file, preferring a classic <c>.sln</c> and
+    /// falling back to the <c>.slnx</c> solution format, mirroring the extension's
+    /// own precedence. The full filename (with extension) is returned because the
+    /// generated metadata JSON is named after it (e.g. <c>App.slnx.json</c>).
+    /// </summary>
     string? SolutionName(string RootPath)
     {
-        var slnFiles = Directory.EnumerateFiles(RootPath, "*.sln", SearchOption.AllDirectories);
-        foreach (string slnFile in slnFiles)
-        {
-            return Path.GetFileName(slnFile);
-        }
-        return null;
+        return FindSolution(RootPath, ".sln") ?? FindSolution(RootPath, ".slnx");
+    }
+
+    static string? FindSolution(string RootPath, string extension)
+    {
+        // A "*.sln" search pattern also matches ".slnx" on Windows, so the
+        // extension is compared explicitly to keep precedence deterministic.
+        return Directory
+            .EnumerateFiles(RootPath, $"*{extension}", SearchOption.AllDirectories)
+            .Where(path => Path.GetExtension(path).Equals(extension, StringComparison.OrdinalIgnoreCase))
+            .Select(Path.GetFileName)
+            .FirstOrDefault();
     }
 
     public Metadata? CompletionMetadata { get; private set; }
