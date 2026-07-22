@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'feat/**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+# Allow the release step to create a GitHub Release and upload the VSIX.
+permissions:
+  contents: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & package VSIX
+    runs-on: ubuntu-latest
+    steps:
+      # SolutionParser (.slnx parser) and AvaloniaVS (the language server's
+      # CompletionEngine dependency) are submodules, so a recursive checkout is
+      # required for both .NET builds below.
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      # SolutionParser targets net9.0; the Avalonia language server targets net8.0.
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Install extension dependencies
+        working-directory: src/vscode-avalonia
+        run: npm ci
+
+      # Bundled .NET tools the extension shells out to. Framework-dependent
+      # builds are portable, so an ubuntu build produces an OS-agnostic VSIX.
+      - name: Build SolutionParser (.slnx support)
+        run: >
+          dotnet build src/SolutionParser/SolutionParser.csproj
+          -c Release
+          --output src/vscode-avalonia/solutionParserTool
+
+      - name: Build Avalonia language server (intellisense)
+        run: >
+          dotnet build src/AvaloniaLSP/AvaloniaLanguageServer/AvaloniaLanguageServer.csproj
+          -c Release
+          --output src/vscode-avalonia/avaloniaServer
+
+      # vscode:prepublish runs `npm run compile` (tsc). --no-yarn forces npm even
+      # though a yarn.lock is present. Prod node_modules are bundled into the VSIX.
+      - name: Package VSIX
+        working-directory: src/vscode-avalonia
+        run: npx --yes @vscode/vsce package --no-yarn
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: vsix
+          path: src/vscode-avalonia/*.vsix
+          if-no-files-found: error
+
+      # Publish a GitHub Release with the VSIX when a v* tag is pushed.
+      # Marketplace publishing (vsce publish) is intentionally out of scope (TBD).
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: src/vscode-avalonia/*.vsix
+          generate_release_notes: true
