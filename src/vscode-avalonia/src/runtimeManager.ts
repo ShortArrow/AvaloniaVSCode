@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
-import * as path from "path";
+import * as fs from "fs";
 import { AppConstants, logger } from "./util/Utilities";
+import { resolveLanguageServerPath } from "./util/languageServerPath";
 
 /**
  * The version of the .NET runtime to acquire.
@@ -43,15 +44,15 @@ export async function getDotnetRuntimePath(): Promise<string> {
 }
 
 /**
- * Gets the path to the Avalonia language server.
- * @returns The path to the Avalonia language server.
- * @throws An error if the extension could not be found.
+ * Gets the path to the bundled Avalonia language server.
+ * @returns The path to the Avalonia language server assembly.
+ * @throws An error if the extension could not be found, or if the installed
+ * extension does not bundle the language server.
  */
 export function getLanguageServerPath() {
 	const avaloniaExtn = vscode.extensions.getExtension(AppConstants.extensionId);
 	if (!avaloniaExtn) {
 		throw new Error("Could not find Avalonia extension.");
 	}
-	const serverLocation = path.join(avaloniaExtn.extensionPath, "avaloniaServer", "AvaloniaLanguageServer.dll");
-	return serverLocation;
+	return resolveLanguageServerPath(avaloniaExtn.extensionPath, fs.existsSync);
 }
