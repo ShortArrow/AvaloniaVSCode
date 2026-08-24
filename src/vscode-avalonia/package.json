@@ -3,7 +3,7 @@
   "displayName": "Avalonia for VSCode (community fork)",
   "description": "Avalonia tools for Visual Studio Code",
   "publisher": "shortarrow",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "preview": true,
   "qna": "false",
