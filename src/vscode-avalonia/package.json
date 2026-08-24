@@ -137,7 +137,8 @@
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "test:unit": "npm run compile && node ./out/test/runUnitTests.js"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.1",
