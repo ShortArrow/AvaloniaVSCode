@@ -9,6 +9,7 @@ import * as fs from "fs";
 import { PreviewerData } from "../models/previewerSettings";
 import { PreviewProcessManager } from "../previewProcessManager";
 import { PreviewServer } from "../services/previewServer";
+import { findMissingPreviewerInputs } from "../util/previewerInputs";
 
 export class PreviewerProcess implements Command {
 	id: string = util.AppConstants.previewProcessCommandId;
@@ -25,14 +26,15 @@ export class PreviewerProcess implements Command {
 	}
 
 	async startPreviewerProcess(previewParams: PreviewerParams, mainUri: vscode.Uri): Promise<PreviewerData> {
-		if (!this.canStartPreviewerProcess(previewParams)) {
-			util.logger.appendLine(`Previewer assets are not available.`);
-			return { file: mainUri, previewerUrl: "", assetsAvailable: false };
-		}
-
 		const fileData = util.getFileDetails(mainUri.fsPath, this._context);
 
 		if (!fileData) {
+			return { file: mainUri, previewerUrl: "", assetsAvailable: false };
+		}
+
+		const missingInputs = findMissingPreviewerInputs(previewParams, fileData.targetPath, fs.existsSync);
+		if (missingInputs.length > 0) {
+			util.logger.appendLine(`Previewer assets are not available: ${missingInputs.join(", ")}`);
 			return { file: mainUri, previewerUrl: "", assetsAvailable: false };
 		}
 
@@ -99,15 +101,6 @@ export class PreviewerProcess implements Command {
 		});
 	}
 
-	canStartPreviewerProcess(previewParams: PreviewerParams) {
-		const result =
-			fs.existsSync(previewParams.previewerPath) &&
-			fs.existsSync(previewParams.projectRuntimeConfigFilePath) &&
-			fs.existsSync(previewParams.projectDepsFilePath) &&
-			fs.existsSync(previewParams.targetPath);
-
-		return result;
-	}
 	constructor(
 		private readonly _context: vscode.ExtensionContext,
 		private readonly _processManager: PreviewProcessManager
