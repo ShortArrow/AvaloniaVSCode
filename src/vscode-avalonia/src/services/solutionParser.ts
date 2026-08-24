@@ -1,5 +1,3 @@
-import * as fs from "fs-extra";
-import * as os from "os";
 import * as path from "path";
 
 import * as vscode from "vscode";
@@ -11,87 +9,11 @@ import { AppConstants, logger } from "../util/Utilities";
 import { getDotnetRuntimePath } from "../runtimeManager";
 
 /**
- * Builds the solution model by parsing the solution file and updating the workspace state.
- * If the output file already exists and `force` is false, the function does nothing.
+ * Parses the workspace solution and stores the resulting model in the workspace state.
  * @param context The extension context.
- * @param force Whether to force the parsing of the solution file even if the output file already exists.
+ * @throws When the solution parser cannot be located or exits with a failure.
  */
-export async function buildSolutionModel(context: vscode.ExtensionContext, force: boolean = false) {
-	var { outputPath, isExist } = await isOutputExists();
-
-	if (!isExist || force) {
-		await parseSolution(context);
-		return;
-	}
-
-	const fileContent = await fs.readFile(outputPath!, "utf-8");
-	updateSolutionModel(context, fileContent);
-}
-
-/**
- * Returns the solution model from the workspace state.
- * @param context The extension context.
- * @returns The solution model, or undefined if it doesn't exist.
- */
-export function getSolutionModel(context: vscode.ExtensionContext): sln.Solution | undefined {
-	const solutionData = context.workspaceState.get<sln.Solution | undefined>(AppConstants.solutionData, undefined);
-	return solutionData;
-}
-
-/**
- * Returns the path to the solution data file.
- * @returns The path to the solution data file, or undefined if it doesn't exist.
- */
-export async function getSolutionDataFile() {
-	const slnFile = await getSolutionFile();
-	if (!slnFile) {
-		logger.appendLine("Could not find solution file.");
-		return;
-	}
-
-	return path.join(os.tmpdir(), `${path.basename(slnFile)}.json`);
-}
-
-/**
- * Deletes the solution data file.
- */
-export async function purgeSolutionDataFile() {
-	const solutionDataFile = await getSolutionDataFile();
-	if (!solutionDataFile) {
-		return;
-	}
-	fs.removeSync(solutionDataFile);
-}
-
-function updateSolutionModel(context: vscode.ExtensionContext, jsonContect: string) {
-	const data = JSON.parse(jsonContect);
-	context.workspaceState.update(AppConstants.solutionData, data);
-}
-
-/**
- * Locates the workspace solution file, preferring a classic `.sln` and falling
- * back to the newer `.slnx` (XML solution). The parser accepts either format by
- * path; when neither exists it returns the first workspace folder.
- * @returns The solution file path, or the workspace folder path when none is found.
- */
-async function getSolutionFile(): Promise<string | undefined> {
-	for (const filePattern of ["**/*.sln", "**/*.slnx"]) {
-		const files = await vscode.workspace.findFiles(filePattern);
-		if (files.length > 0) {
-			return files[0].fsPath;
-		}
-	}
-
-	return vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-}
-
-async function isOutputExists() {
-	const outputPath = await getSolutionDataFile();
-	logger.appendLine(`[EXT - INFO] Solution data path path: ${outputPath}`);
-	return { outputPath, isExist: fs.pathExistsSync(outputPath!) };
-}
-
-async function parseSolution(context: vscode.ExtensionContext): Promise<string> {
+export async function buildSolutionModel(context: vscode.ExtensionContext): Promise<void> {
 	const avaloniaExtn = vscode.extensions.getExtension(AppConstants.extensionId);
 	if (!avaloniaExtn) {
 		throw new Error("Could not find sample extension.");
@@ -103,7 +25,7 @@ async function parseSolution(context: vscode.ExtensionContext): Promise<string> 
 
 	const parserLocation = path.join(avaloniaExtn.extensionPath, "solutionParserTool", "SolutionParser.dll");
 
-	return new Promise<string>(async (resolve, reject) => {
+	return new Promise<void>(async (resolve, reject) => {
 		let dotnetCommandPath: string;
 		try {
 			dotnetCommandPath = await getDotnetRuntimePath();
@@ -145,15 +67,49 @@ async function parseSolution(context: vscode.ExtensionContext): Promise<string> 
 				}
 				catch (error) {
 					reject(error);
+					return;
 				}
-				resolve(jsonContent);
+				resolve();
 			}			
 			else {
-				if (errorData.length === 0)
+				if (errorData.length === 0) {
 					errorData = `Solution parser process exited with code ${code}`;
+				}
 
 				reject(new Error(errorData));
 			}
 		});
 	});
+}
+
+/**
+ * Returns the solution model from the workspace state.
+ * @param context The extension context.
+ * @returns The solution model, or undefined if it doesn't exist.
+ */
+export function getSolutionModel(context: vscode.ExtensionContext): sln.Solution | undefined {
+	const solutionData = context.workspaceState.get<sln.Solution | undefined>(AppConstants.solutionData, undefined);
+	return solutionData;
+}
+
+function updateSolutionModel(context: vscode.ExtensionContext, jsonContect: string) {
+	const data = JSON.parse(jsonContect);
+	context.workspaceState.update(AppConstants.solutionData, data);
+}
+
+/**
+ * Locates the workspace solution file, preferring a classic `.sln` and falling
+ * back to the newer `.slnx` (XML solution). The parser accepts either format by
+ * path; when neither exists it returns the first workspace folder.
+ * @returns The solution file path, or the workspace folder path when none is found.
+ */
+async function getSolutionFile(): Promise<string | undefined> {
+	for (const filePattern of ["**/*.sln", "**/*.slnx"]) {
+		const files = await vscode.workspace.findFiles(filePattern);
+		if (files.length > 0) {
+			return files[0].fsPath;
+		}
+	}
+
+	return vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 }

@@ -16,7 +16,7 @@ export class CreatePreviewerAssets implements Command {
 			return;
 		}
 
-		await sln.buildSolutionModel(this._context, true);
+		await sln.buildSolutionModel(this._context);
 		const solutionData = sln.getSolutionModel(this._context);
 
 		const project = getExecutableProject(solutionData!);
@@ -59,7 +59,7 @@ export class CreatePreviewerAssets implements Command {
 			dotnet.on("close", async (code) => {
 				if (code === 0) {
 					if (!project.designerHostPath || project.designerHostPath === "") {
-						await sln.buildSolutionModel(this._context, true);
+						await sln.buildSolutionModel(this._context);
 					}
 
 					const solution = sln.getSolutionModel(this._context);
