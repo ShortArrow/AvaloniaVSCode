@@ -10,6 +10,40 @@ All notable changes to the "vscode-avalonia" extension will be documented in thi
 > (starting at 0.1.0) are changes made after the fork point; the upstream 0.0.x
 > history is preserved unchanged below.
 
+## [0.1.3] - 2026-08-24
+
+### Fixed
+
+- Pick the solution that governs the workspace. File search returned any `.sln`
+  anywhere in the tree and the first hit won, and the `.sln` pattern was queried
+  before `.slnx`. File search does not honour `.gitignore`, so a workspace whose
+  root holds a `.slnx` could be driven by an unrelated solution archived in a
+  git-ignored subtree. The previewer then built that project and stopped at its
+  compile errors, never reaching the preview. Candidates are now ordered by path
+  depth, with the extension and then the name breaking ties.
+
+- Validate the assembly that owns the XAML file before starting the previewer.
+  The pre-flight check covered only the executable project, while the assembly
+  handed to the designer host comes from the cached solution model per XAML
+  file. Renaming a project left that entry stale, so the previewer started and
+  then died with `FileNotFoundException` on an assembly name that no longer
+  existed. All designer host inputs are checked together, and a missing one now
+  reaches the existing "build the project first" prompt.
+
+- Name the build that is missing the language server. A VSIX packaged without
+  `avaloniaServer/AvaloniaLanguageServer.dll` still launched `dotnet` against
+  that path, so the only diagnostic was the .NET CLI's "Could not execute
+  because the specified command or file was not found", repeated over five
+  client restart attempts. The assembly is checked before launch and the error
+  says which build is incomplete.
+
+### Removed
+
+- The solution model cache under `%TEMP%`. The branch that read it was never
+  taken, so the file was written and never read. The stale project metadata it
+  collected would have resurfaced the previewer's `FileNotFoundException` the
+  moment that branch was used again.
+
 ## [0.1.2] - 2026-07-22
 
 ### Added
