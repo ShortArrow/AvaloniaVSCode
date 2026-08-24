@@ -7,6 +7,7 @@ import { spawn } from "child_process";
 
 import { AppConstants, logger } from "../util/Utilities";
 import { getDotnetRuntimePath } from "../runtimeManager";
+import { pickSolutionPath } from "../util/solutionSelection";
 
 /**
  * Parses the workspace solution and stores the resulting model in the workspace state.
@@ -98,18 +99,14 @@ function updateSolutionModel(context: vscode.ExtensionContext, jsonContect: stri
 }
 
 /**
- * Locates the workspace solution file, preferring a classic `.sln` and falling
- * back to the newer `.slnx` (XML solution). The parser accepts either format by
- * path; when neither exists it returns the first workspace folder.
+ * Locates the workspace solution file. The parser accepts a classic `.sln` or
+ * the newer `.slnx` (XML solution) by path; when neither exists it returns the
+ * first workspace folder.
  * @returns The solution file path, or the workspace folder path when none is found.
  */
 async function getSolutionFile(): Promise<string | undefined> {
-	for (const filePattern of ["**/*.sln", "**/*.slnx"]) {
-		const files = await vscode.workspace.findFiles(filePattern);
-		if (files.length > 0) {
-			return files[0].fsPath;
-		}
-	}
+	const candidates = await vscode.workspace.findFiles("**/*.{sln,slnx}");
+	const solutionPath = pickSolutionPath(candidates.map((candidate) => candidate.fsPath));
 
-	return vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+	return solutionPath ?? vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 }
